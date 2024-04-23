@@ -1,4 +1,4 @@
-import { createContext, useState, React } from "react";
+import { createContext, useState } from "react";
 
 
 export const CurrentUser = createContext()

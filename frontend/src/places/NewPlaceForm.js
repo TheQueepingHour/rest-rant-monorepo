@@ -1,4 +1,4 @@
-import { useState, React } from "react"
+import { useState } from "react"
 import { useHistory } from "react-router"
 
 function NewPlaceForm() {
