@@ -33,4 +33,14 @@ router.get('/profile', async (req, res) => {
     console.log(req.session.userId)
 })
 
+router.post('/super-important-route', async (req, res) => {
+    if(req.session.userId) {
+        console.log('really important thing')
+        res.send('done')
+    }else {
+        console.log('You are not authorized to do imporant thing')
+        res.send('DENIED')
+    }
+})
+
 module.exports = router
