@@ -98,18 +98,41 @@ router.post('/:placeId/comments', async (req, res) => {
         where: { userId: req.body.authorId }
     })
 
-    if (!author) {
-        res.status(404).json({ message: `Could not find author with id "${req.body.authorId}"` })
+    if(!author) {
+        res.status(400).json({ message: `Could not find author with id "${req.body.authorId}"`})
+    }
+
+    let currentUser;
+    try {
+        const [method, token] = req.headers.authorization.split(' ')
+        if(method == 'Bearer'){
+            const result = await jwt.decode(process.env.JWT_SECRET, token)
+            const { id } = result.value
+            currentUser = await User.findOne({
+                where: {
+                    userId: id
+                }
+            })
+        }
+    } catch {
+        currentUser = null
+    }
+
+    if(!currentUser) {
+        return res.status(404).json({
+            message: `You must be logged in to rant or rave.`
+        })
     }
 
     const comment = await Comment.create({
         ...req.body,
+        authorId: currentUser.userId,
         placeId: placeId
     })
 
     res.send({
         ...comment.toJSON(),
-        author
+        author: currentUser
     })
 })
 
