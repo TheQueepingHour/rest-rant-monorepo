@@ -1,12 +1,12 @@
 import { useState, useEffect, useContext } from 'react'
 import { useHistory } from "react-router";
-import { CurrentUser } from './contexts/CurrentUser';
+import { CurrentUser, setCurrentUser } from './contexts/CurrentUser';
 
 function Navigation() {
 
     const history = useHistory()
 
-    const { currentUser } = useContext(CurrentUser)
+    const { currentUser, setCurrentUser } = useContext(CurrentUser)
 
     let loginActions = (
         <>
@@ -23,11 +23,19 @@ function Navigation() {
         </>
     )
 
+    let logOut = () => {
+        localStorage.removeItem('token')
+        setCurrentUser(null)
+        history.push('/')
+    }
+
     if (currentUser) {
         loginActions = (
-            <li style={{ float: 'right' }}>
+            <><li style={{ float: 'right' }}>
                 Logged in as {currentUser.firstName} {currentUser.lastName}
-            </li>
+            </li><li style={{ float: 'right' }}>
+                    <button onClick={logOut}>Logout</button>
+                </li></>
         )
     }
 
