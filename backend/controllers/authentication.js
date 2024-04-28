@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const db = require('../models')
 const bcrypt = require('bcrypt')
-const user = require('../models/user')
+const jwt = require('json-web-token')
 
 const { User } = db
 
@@ -14,32 +14,28 @@ router.post('/', async (req, res) => {
             message: `Could not find a user with that username or password.`
         })
     }else{
-        req.session.userId = user.userId
-        res.json({user})
+        const result = await jwt.encode(process.env.JWT_SECRET, { id: user.userId })
+        res.json({ user: user, token: result.value })
     }
 })
 
 router.get('/profile', async (req, res) => {
     try {
-        let user = await User.findOne({
-            where: {
-                userId: req.session.userId
-            }
-        })
-        res.json(user)
-    }catch{
-        res.json(null)
-    }
-    console.log(req.session.userId)
-})
+        const [authenticationMethod, token] = req.headers.authorization.split(' ')
 
-router.post('/super-important-route', async (req, res) => {
-    if(req.session.userId) {
-        console.log('really important thing')
-        res.send('done')
-    }else {
-        console.log('You are not authorized to do imporant thing')
-        res.send('DENIED')
+        if (authenticationMethod == 'Bearer') {
+            const result = await jwt.decode(process.env.JWT_SECRET, token)
+            const { id } = result.value
+
+            let user = await User.findOne({
+                where: {
+                    userId: id
+                }
+            })
+            res.json(user)
+        }
+    } catch {
+        res.json(null)
     }
 })
 
